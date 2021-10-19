@@ -37,11 +37,11 @@ class indicator
                 temp.push_back(arr[i]);
             }
 
-            output = SMA(arr);
+            output.push_back(SMA(arr)[0]);
 
             for(int i = period; i !=arr.size();i++)
             {
-                output = (arr[i]*(2/(1+i))+output[0]*(1-(2/(1+i))));
+                output.push_back((arr[i]*(2/(1+i))+output[0]*(1-(2/(1+i)))));
             }
         }
         //simple moving average (index 0 = current day)
