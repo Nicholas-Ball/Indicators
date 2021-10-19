@@ -8,14 +8,15 @@ inline double PercentChange(double initial, double final)
 }
 
 //invert vector array
-std::vector<double> InvertArray(std::vector<double> arr)
+template <typename t>
+std::vector<t> InvertArray(std::vector<t> arr)
 {
     std::vector<double> out;
     for(int i = arr.size()-1;i != -1;i--)
     {
-        arr.push_back(arr[i]);
+        out.push_back(arr[i]);
     }
-    return arr;
+    return out;
 }
 
 class indicator
@@ -26,23 +27,19 @@ class indicator
         {
             std::vector<double> output;
 
+            output.push_back(SMA(arr)[period]);
+
             //invert
             arr = InvertArray(arr);
-            
-            std::vector<double> temp; 
 
-            //make a first step array for sma
-            for(int i = 0;i != period;i++)
-            {
-                temp.push_back(arr[i]);
-            }
-
-            output.push_back(SMA(arr)[0]);
+            double multiplier = 2.0/(1.0+(double)period);
 
             for(int i = period; i !=arr.size();i++)
             {
-                output.push_back((arr[i]*(2/(1+i))+output[0]*(1-(2/(1+i)))));
+                //(val*multiplier)+LastEMA*(1-multiplier))
+                output.push_back(arr[i]*multiplier+output[output.size()-1]*(1-multiplier));
             }
+            return InvertArray(output);
         }
         //simple moving average (index 0 = current day)
         static std::vector<double> SMA(std::vector<double> arr)
@@ -52,7 +49,31 @@ class indicator
             {
                 sma.push_back((sma[i-1]+arr[i])/2);
             }
-            return sma;
+            return InvertArray(sma);
+        }
+        //macd calculations (index 0 = current day)
+        static std::vector<double> MACD(std::vector<double> arr)
+        {
+            //invert array
+            arr = InvertArray(arr);
+
+            std::vector<double> temp;
+
+            std::vector<double> out;
+            
+            //loop through inputed
+            for(int i = 0; i != arr.size();i++)
+            {
+                if(i >= 26)
+                {
+                    out.push_back(EMA(temp,12).end() - EMA(temp,26).end());
+                }
+                temp.push_back(arr[i]);
+            }
+
+            return InvertArray(out);
+
+
         }
         //rsi calculations (index 0 = current day)
         static double RSI(std::vector<double> arr,int period)
@@ -118,8 +139,6 @@ class indicator
 
                     value = 100-(100/(((up*13)+cup)/((down*13)+cdown)));
                 }
-
-
             }
             return value;
         }
