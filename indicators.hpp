@@ -4,23 +4,48 @@
 
 inline double PercentChange(double initial, double final)
 {
-    return ((final - initial)/(fabs(initial)))*100;
+    return ((final - initial)/(fabs(initial)))*100.0;
+}
+
+//invert vector array
+std::vector<double> InvertArray(std::vector<double> arr)
+{
+    std::vector<double> out;
+    for(int i = arr.size()-1;i != -1;i--)
+    {
+        arr.push_back(arr[i]);
+    }
+    return arr;
 }
 
 class indicator
 {
     public:
-        //rsi calculations
+        //simple moving average (index 0 = current day)
+        static std::vector<double> SMA(std::vector<double> arr)
+        {
+            std::vector <double> sma = {arr[0]};
+            for(int i = 0; i != arr.size();i++)
+            {
+                sma.push_back((sma[i-1]+arr[i])/2);
+            }
+            return sma;
+        }
+        //rsi calculations (index 0 = current day)
         static double RSI(std::vector<double> arr,int period)
         {   
             double value = -1;
             if(arr.size() >= period){
 
+                //invert array
+                arr = InvertArray(arr);
+
                 double PreviousDay = arr[0];
                 double up = 0;
                 double down = 0;
+
                 //calculate first perod's rsi
-                for(int i = 1;i != period;i++)
+                for(int i = 0;i != period;i++)
                 {
                     //calculate diference of today with n-1 day
                     double difference =  PercentChange(PreviousDay,arr[i]);
@@ -37,10 +62,10 @@ class indicator
                         up = (up+difference)/2; 
 
                     }
+                    PreviousDay = arr[i];
                 }
                 //calculate first step rsi
                 value = 100-(100/(1+(up/down)));
-                std::cout<<value<<std::endl;
 
                 //calculate remaing days
                 for(int i = period; i != arr.size();i++)
@@ -65,6 +90,8 @@ class indicator
                         up = (up+difference)/2;
 
                     }
+
+                    PreviousDay = arr[i];
 
                     value = 100-(100/(((up*13)+cup)/((down*13)+cdown)));
                 }
