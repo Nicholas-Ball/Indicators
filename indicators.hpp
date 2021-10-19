@@ -21,6 +21,29 @@ std::vector<double> InvertArray(std::vector<double> arr)
 class indicator
 {
     public:
+        //Calculate ema (index 0 = current day)
+        static std::vector<double> EMA(std::vector<double> arr,int period)
+        {
+            std::vector<double> output;
+
+            //invert
+            arr = InvertArray(arr);
+            
+            std::vector<double> temp; 
+
+            //make a first step array for sma
+            for(int i = 0;i != period;i++)
+            {
+                temp.push_back(arr[i]);
+            }
+
+            output = SMA(arr);
+
+            for(int i = period; i !=arr.size();i++)
+            {
+                output = (arr[i]*(2/(1+i))+output[0]*(1-(2/(1+i))));
+            }
+        }
         //simple moving average (index 0 = current day)
         static std::vector<double> SMA(std::vector<double> arr)
         {
